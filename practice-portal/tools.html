@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help &amp; tools | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Help &amp; tools</h1>
+  <p class="sub">New tabs, popup windows and browser dialogs: the things that make PAD bots hang.</p>
+  <div class="grid">
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">New tab</h2>
+      <p class="muted">Opens the enrollment guide in a new browser tab.</p>
+      <a href="help.html?section=guide" target="_blank" rel="noopener" data-testid="open-guide-tab">Open enrollment guide (new tab)</a>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">Popup window</h2>
+      <p class="muted">Opens the fee schedule in a small popup window.</p>
+      <button type="button" data-testid="open-fee-popup">View fee schedule</button>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">Alert</h2>
+      <p class="muted">Shows a browser alert with an OK button.</p>
+      <button type="button" data-testid="show-alert">Show session notice</button>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">Confirm</h2>
+      <p class="muted">Asks OK / Cancel before withdrawing application ENR-2026-104882.</p>
+      <button type="button" class="danger" data-testid="withdraw-application">Withdraw application</button>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">Prompt</h2>
+      <p class="muted">Asks you to type a note.</p>
+      <button type="button" class="secondary" data-testid="add-note">Add case note</button>
+    </div>
+  </div>
+  <div class="card"><strong>Result:</strong> <span data-testid="dialog-result" role="status">Nothing yet.</span></div>
+</main>
+<footer>ProviderGate practice portal · fake data only</footer>
+<script src="app.js"></script>
+<script>
+if (Portal.requireAuth()) {
+  Portal.header("tools.html");
+  var res = document.querySelector("[data-testid=dialog-result]");
+  document.querySelector("[data-testid=open-fee-popup]").addEventListener("click", function () {
+    window.open("help.html?section=fees", "feeSchedule", "width=640,height=520");
+  });
+  document.querySelector("[data-testid=show-alert]").addEventListener("click", function () {
+    alert("Your session will expire in 15 minutes. Save your work.");
+    res.textContent = "Alert acknowledged.";
+  });
+  document.querySelector("[data-testid=withdraw-application]").addEventListener("click", function () {
+    var ok = confirm("Are you sure you want to withdraw application ENR-2026-104882? This cannot be undone.");
+    res.textContent = ok ? "Application ENR-2026-104882 withdrawn." : "Withdrawal cancelled.";
+  });
+  document.querySelector("[data-testid=add-note]").addEventListener("click", function () {
+    var n = prompt("Enter a case note:", "");
+    res.textContent = n ? "Note saved: " + n : "No note added.";
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provider details | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <p><a href="providers.html" data-testid="back-to-search">‹ Back to provider search</a></p>
+  <div id="notFound" class="card hidden" data-testid="provider-not-found"><h1>Provider not found</h1><p class="sub">No provider with that NPI is on file.</p></div>
+  <div id="detail" class="hidden">
+    <h1 data-testid="detail-name"></h1>
+    <p class="sub" data-testid="detail-specialty"></p>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">Provider information</h2>
+      <dl class="details">
+        <dt>NPI</dt><dd data-testid="detail-npi"></dd>
+        <dt>Credential</dt><dd data-testid="detail-credential"></dd>
+        <dt>Practice location</dt><dd data-testid="detail-location"></dd>
+        <dt>Phone</dt><dd data-testid="detail-phone"></dd>
+        <dt>Email</dt><dd data-testid="detail-email"></dd>
+        <dt>Enrollment status</dt><dd data-testid="detail-enrollment"></dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0;font-size:17px">State license</h2>
+      <dl class="details">
+        <dt>License number</dt><dd data-testid="detail-license"></dd>
+        <dt>Issuing state</dt><dd data-testid="detail-license-state"></dd>
+        <dt>License status</dt><dd data-testid="detail-license-status"></dd>
+        <dt>Expiration date</dt><dd data-testid="detail-expiry"></dd>
+      </dl>
+    </div>
+    <div class="actions"><a class="btn" data-testid="start-enrollment" id="startEnroll" href="enroll.html">Start revalidation / enrollment</a></div>
+  </div>
+</main>
+<footer>ProviderGate practice portal · fake data only</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+if (Portal.requireAuth()) {
+  Portal.header("providers.html");
+  var p = Portal.providerByNpi(Portal.qs("npi"));
+  var $ = function (t) { return document.querySelector("[data-testid=" + t + "]"); };
+  if (!p) { document.getElementById("notFound").classList.remove("hidden"); }
+  else {
+    document.getElementById("detail").classList.remove("hidden");
+    document.title = p.firstName + " " + p.lastName + " | ProviderGate";
+    $("detail-name").textContent = p.firstName + " " + p.lastName + ", " + p.credential;
+    $("detail-specialty").textContent = p.specialty;
+    $("detail-npi").textContent = p.npi;
+    $("detail-credential").textContent = p.credential;
+    $("detail-location").textContent = p.city + ", " + p.state;
+    $("detail-phone").textContent = p.phone;
+    $("detail-email").textContent = p.email;
+    $("detail-enrollment").innerHTML = Portal.badge(p.enrollmentStatus);
+    $("detail-license").textContent = p.licenseNumber;
+    $("detail-license-state").textContent = p.state;
+    $("detail-license-status").innerHTML = Portal.badge(p.licenseStatus);
+    $("detail-expiry").textContent = Portal.fmtUS(Portal.expiryDate(p)) || "—";
+    document.getElementById("startEnroll").href = "enroll.html?npi=" + p.npi;
+  }
+}
+</script>
+</body>
+</html>

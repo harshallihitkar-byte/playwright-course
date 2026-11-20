@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provider search | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Provider search</h1>
+  <p class="sub">All providers enrolled through your organization.</p>
+  <div class="card">
+    <div class="toolbar">
+      <div>
+        <button type="button" data-testid="open-filter-drawer" data-dyn="ctl00_Main_btnFilter" aria-controls="filterDrawer">Filter by name</button>
+        <span class="chips" data-testid="active-filters"></span>
+      </div>
+      <div class="muted" data-testid="results-summary" aria-live="polite"></div>
+    </div>
+    <div class="loading hidden" data-testid="table-loading"><div class="spinner"></div><p>Loading providers…</p></div>
+    <table data-testid="providers-table" aria-label="Providers">
+      <thead><tr><th>NPI</th><th>Provider name</th><th>Specialty</th><th>State</th><th>Enrollment status</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="muted hidden" data-testid="no-results" style="padding:16px">No providers match your filters.</p>
+    <div class="pager" data-testid="pagination">
+      <button type="button" data-testid="prev-page" aria-label="Previous page">‹ Prev</button>
+      <span id="pageButtons"></span>
+      <button type="button" data-testid="next-page" aria-label="Next page">Next ›</button>
+      <span class="muted" data-testid="page-info" style="margin-left:8px"></span>
+    </div>
+  </div>
+</main>
+
+<div class="drawer-backdrop hidden" data-testid="drawer-backdrop"></div>
+<aside class="drawer" id="filterDrawer" role="dialog" aria-label="Filter providers" data-testid="filter-drawer" aria-hidden="true">
+  <h2>Filter by name</h2>
+  <p class="help">Partial names work, e.g. "pat" finds Patel.</p>
+  <label data-dyn-for="ctl00_Drawer_txtName">Provider name</label>
+  <input type="text" name="providerName" data-dyn="ctl00_Drawer_txtName" placeholder="First or last name" data-testid="filter-name">
+  <label data-dyn-for="ctl00_Drawer_ddlState">State</label>
+  <select name="state" data-dyn="ctl00_Drawer_ddlState" data-testid="filter-state"><option value="">All states</option></select>
+  <label data-dyn-for="ctl00_Drawer_ddlSpecialty">Specialty</label>
+  <select name="specialty" data-dyn="ctl00_Drawer_ddlSpecialty" data-testid="filter-specialty"><option value="">All specialties</option></select>
+  <div class="actions">
+    <button type="button" data-testid="apply-filters">Apply filters</button>
+    <button type="button" class="secondary" data-testid="clear-filters">Clear</button>
+    <button type="button" class="secondary" data-testid="close-drawer" aria-label="Close filter drawer">✕</button>
+  </div>
+</aside>
+<footer>ProviderGate practice portal · fake data only</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+if (Portal.requireAuth()) {
+  Portal.header("providers.html");
+  Portal.randomizeIds();
+  var PAGE_SIZE = 8, page = 1, filters = { name: "", state: "", specialty: "" };
+  var all = window.PROVIDERS.slice().sort(function (a, b) { return a.lastName.localeCompare(b.lastName); });
+  var drawer = document.getElementById("filterDrawer"), backdrop = document.querySelector("[data-testid=drawer-backdrop]");
+  var $ = function (t) { return document.querySelector("[data-testid=" + t + "]"); };
+
+  function uniq(k) { return Array.from(new Set(all.map(function (p) { return p[k]; }))).sort(); }
+  uniq("state").forEach(function (s) { $("filter-state").insertAdjacentHTML("beforeend", '<option value="' + s + '">' + s + "</option>"); });
+  uniq("specialty").forEach(function (s) { $("filter-specialty").insertAdjacentHTML("beforeend", '<option value="' + Portal.esc(s) + '">' + Portal.esc(s) + "</option>"); });
+
+  function filtered() {
+    var n = filters.name.toLowerCase();
+    return all.filter(function (p) {
+      return (!n || (p.firstName + " " + p.lastName).toLowerCase().indexOf(n) >= 0) &&
+        (!filters.state || p.state === filters.state) && (!filters.specialty || p.specialty === filters.specialty);
+    });
+  }
+  function render() {
+    var list = filtered(), pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    if (page > pages) page = pages;
+    var start = (page - 1) * PAGE_SIZE, slice = list.slice(start, start + PAGE_SIZE);
+    document.getElementById("rows").innerHTML = slice.map(function (p) {
+      return '<tr data-testid="provider-row" data-npi="' + p.npi + '" id="' + Portal.rid("gvProviders_row") + '">' +
+        '<td data-testid="cell-npi">' + p.npi + "</td>" +
+        '<td data-testid="cell-name"><a href="provider.html?npi=' + p.npi + '">' + Portal.esc(p.firstName + " " + p.lastName + ", " + p.credential) + "</a></td>" +
+        '<td data-testid="cell-specialty">' + Portal.esc(p.specialty) + '</td><td data-testid="cell-state">' + p.state + "</td>" +
+        '<td data-testid="cell-status">' + Portal.badge(p.enrollmentStatus) + "</td></tr>";
+    }).join("");
+    $("no-results").classList.toggle("hidden", list.length > 0);
+    $("results-summary").textContent = list.length ? "Showing " + (start + 1) + "–" + (start + slice.length) + " of " + list.length + " providers" : "0 providers";
+    $("page-info").textContent = "Page " + page + " of " + pages;
+    $("prev-page").disabled = page <= 1;
+    $("next-page").disabled = page >= pages;
+    var pb = "";
+    for (var i = 1; i <= pages; i++) pb += '<button type="button" data-testid="page-' + i + '" aria-label="Page ' + i + '"' + (i === page ? ' class="current" aria-current="page"' : "") + ">" + i + "</button>";
+    document.getElementById("pageButtons").innerHTML = pb;
+    var chips = [];
+    if (filters.name) chips.push("Name: " + filters.name);
+    if (filters.state) chips.push("State: " + filters.state);
+    if (filters.specialty) chips.push("Specialty: " + filters.specialty);
+    $("active-filters").innerHTML = chips.map(function (c) { return "<span>" + Portal.esc(c) + "</span>"; }).join("");
+  }
+  function loadThen(fn) { // fake server round-trip so learners must wait
+    $("table-loading").classList.remove("hidden"); $("providers-table").classList.add("hidden");
+    setTimeout(function () { fn(); render(); $("table-loading").classList.add("hidden"); $("providers-table").classList.remove("hidden"); }, 300 + Math.random() * 500);
+  }
+  function openDrawer() { drawer.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); backdrop.classList.remove("hidden"); setTimeout(function(){ $("filter-name").focus(); }, 260); }
+  function closeDrawer() { drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); backdrop.classList.add("hidden"); }
+  $("open-filter-drawer").addEventListener("click", openDrawer);
+  $("close-drawer").addEventListener("click", closeDrawer);
+  backdrop.addEventListener("click", closeDrawer);
+  $("apply-filters").addEventListener("click", function () {
+    closeDrawer();
+    loadThen(function () { filters = { name: $("filter-name").value.trim(), state: $("filter-state").value, specialty: $("filter-specialty").value }; page = 1; });
+  });
+  $("clear-filters").addEventListener("click", function () {
+    $("filter-name").value = ""; $("filter-state").value = ""; $("filter-specialty").value = "";
+    closeDrawer(); loadThen(function () { filters = { name: "", state: "", specialty: "" }; page = 1; });
+  });
+  $("filter-name").addEventListener("keydown", function (e) { if (e.key === "Enter") $("apply-filters").click(); });
+  $("prev-page").addEventListener("click", function () { loadThen(function () { page--; }); });
+  $("next-page").addEventListener("click", function () { loadThen(function () { page++; }); });
+  document.getElementById("pageButtons").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (b) { var n = +b.textContent; loadThen(function () { page = n; }); }
+  });
+  loadThen(function () {});
+}
+</script>
+</body>
+</html>

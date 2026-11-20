@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in | ProviderGate Practice Portal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="banner" role="note">Practice portal for learning automation. All data is FAKE. Not affiliated with CMS, PECOS or any payer.</div>
+<div class="login-wrap">
+  <div class="brand">Provider<span>Gate</span></div>
+  <p class="sub" style="text-align:center">Provider Enrollment &amp; Credentialing (practice)</p>
+
+  <div class="card creds" data-testid="practice-credentials">
+    <strong>Practice login details</strong><br>
+    Username: <code data-testid="demo-username">provider.admin</code><br>
+    Password: <code data-testid="demo-password">Enroll@2026</code><br>
+    One-time passcode (OTP): <code data-testid="demo-otp">482913</code>
+  </div>
+
+  <!-- STEP 1: username + password -->
+  <form class="card" id="loginForm" data-testid="login-form" novalidate>
+    <h1>Sign in</h1>
+    <p class="sub">Use your ProviderGate user ID.</p>
+    <label data-dyn-for="ctl00_Main_txtUserId">User ID</label>
+    <input type="text" data-dyn="ctl00_Main_txtUserId" name="username" placeholder="Enter user ID" autocomplete="username" data-testid="username-input">
+    <label data-dyn-for="ctl00_Main_txtPwd">Password</label>
+    <input type="password" data-dyn="ctl00_Main_txtPwd" name="password" placeholder="Enter password" autocomplete="current-password" data-testid="password-input">
+    <div class="alert error hidden" role="alert" data-testid="login-error"></div>
+    <div class="actions"><button type="submit" data-dyn="ctl00_Main_btnLogin" data-testid="login-button">Sign in</button>
+      <span class="muted hidden" data-testid="sending-code"><span class="spinner sm"></span>Sending code…</span></div>
+  </form>
+
+  <!-- STEP 2: OTP (appears after a short delay) -->
+  <form class="card hidden" id="otpForm" data-testid="otp-form" novalidate>
+    <h1>Verify it's you</h1>
+    <p class="sub">We sent a 6-digit code to the phone ending in ••42.</p>
+    <label data-dyn-for="ctl00_Main_txtOtp">One-time passcode</label>
+    <input type="text" inputmode="numeric" maxlength="6" data-dyn="ctl00_Main_txtOtp" name="otp" placeholder="6-digit code" data-testid="otp-input" autocomplete="one-time-code">
+    <div class="alert error hidden" role="alert" data-testid="otp-error"></div>
+    <div class="actions"><button type="submit" data-dyn="ctl00_Main_btnVerify" data-testid="verify-otp-button">Verify</button>
+      <span class="muted hidden" data-testid="verifying"><span class="spinner sm"></span>Verifying…</span></div>
+  </form>
+</div>
+<footer>ProviderGate practice portal · fake data only</footer>
+<script src="app.js"></script>
+<script>
+  Portal.randomizeIds();
+  var next = Portal.qs("next") || "dashboard.html";
+  if (!/^[\w.-]+\.html(\?.*)?$/.test(next)) next = "dashboard.html";
+  if (Portal.isAuthed()) location.replace(next);
+
+  var lf = document.getElementById("loginForm"), of = document.getElementById("otpForm");
+  lf.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = lf.username.value.trim(), p = lf.password.value, err = lf.querySelector("[data-testid=login-error]");
+    err.classList.add("hidden");
+    if (!u || !p) { err.textContent = "Enter your user ID and password."; err.classList.remove("hidden"); return; }
+    if (u !== Portal.USER.username || p !== Portal.USER.password) { err.textContent = "Invalid user ID or password. Please try again."; err.classList.remove("hidden"); return; }
+    lf.querySelector("[data-testid=login-button]").disabled = true;
+    lf.querySelector("[data-testid=sending-code]").classList.remove("hidden");
+    setTimeout(function () { lf.classList.add("hidden"); of.classList.remove("hidden"); of.otp.focus(); }, 600 + Math.random() * 900);
+  });
+  of.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = of.querySelector("[data-testid=otp-error]");
+    err.classList.add("hidden");
+    if (of.otp.value.trim() !== Portal.USER.otp) { err.textContent = "That code is incorrect or expired."; err.classList.remove("hidden"); return; }
+    of.querySelector("[data-testid=verifying]").classList.remove("hidden");
+    setTimeout(function () { Portal.signIn(); location.href = next; }, 400);
+  });
+</script>
+</body>
+</html>

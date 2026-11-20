@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help center | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="banner" role="note">Practice portal for learning automation. All data is FAKE.</div>
+<main>
+  <section id="guide" class="card" data-testid="guide-section">
+    <h1 data-testid="guide-title">Enrollment guide</h1>
+    <ol>
+      <li>Confirm the provider's NPI and active state license.</li>
+      <li>Collect the license copy and W-9.</li>
+      <li>Complete the 4-step enrollment application.</li>
+      <li>Track the application in the status queue.</li>
+    </ol>
+  </section>
+  <section id="fees" class="card hidden" data-testid="fees-section">
+    <h1 data-testid="fees-title">Fee schedule (sample)</h1>
+    <table aria-label="Fee schedule">
+      <thead><tr><th>Application type</th><th>Fee (USD)</th></tr></thead>
+      <tbody>
+        <tr><td>Individual enrollment</td><td data-testid="fee-individual">$0.00</td></tr>
+        <tr><td>Group enrollment</td><td data-testid="fee-group">$709.00</td></tr>
+        <tr><td>Revalidation</td><td data-testid="fee-revalidation">$0.00</td></tr>
+      </tbody>
+    </table>
+    <div class="actions"><button type="button" data-testid="close-window" onclick="window.close()">Close window</button></div>
+  </section>
+</main>
+<script>
+  var s = new URLSearchParams(location.search).get("section");
+  if (s === "fees") {
+    document.getElementById("guide").classList.add("hidden");
+    document.getElementById("fees").classList.remove("hidden");
+    document.title = "Fee schedule | ProviderGate";
+  } else { document.title = "Enrollment guide | ProviderGate"; }
+</script>
+</body>
+</html>

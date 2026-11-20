@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New enrollment | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Provider enrollment application</h1>
+  <p class="sub">Complete all four steps. Fields marked * are required.</p>
+  <ol class="steps" data-testid="step-indicator">
+    <li data-step="1">1. Provider details</li><li data-step="2">2. Practice</li><li data-step="3">3. Documents</li><li data-step="4">4. Review &amp; submit</li>
+  </ol>
+
+  <form id="enrollForm" class="card" novalidate data-testid="enrollment-form">
+    <!-- STEP 1 -->
+    <section data-step-panel="1" data-testid="step-1">
+      <h2 style="margin-top:0;font-size:18px">Step 1 of 4: Provider details</h2>
+      <div class="row">
+        <div><label data-dyn-for="ctl00_Enroll_txtFirst">First name *</label><input type="text" name="firstName" data-dyn="ctl00_Enroll_txtFirst" data-testid="first-name"></div>
+        <div><label data-dyn-for="ctl00_Enroll_txtLast">Last name *</label><input type="text" name="lastName" data-dyn="ctl00_Enroll_txtLast" data-testid="last-name"></div>
+      </div>
+      <div class="row">
+        <div><label data-dyn-for="ctl00_Enroll_txtNpi">NPI *</label><input type="text" name="npi" maxlength="10" placeholder="10-digit NPI" data-dyn="ctl00_Enroll_txtNpi" data-testid="npi"><div class="help">Exactly 10 digits.</div></div>
+        <div><label data-dyn-for="ctl00_Enroll_dtDob">Date of birth *</label><input type="date" name="dob" data-dyn="ctl00_Enroll_dtDob" data-testid="dob"></div>
+      </div>
+      <div class="row">
+        <div><label data-dyn-for="ctl00_Enroll_ddlType">Provider type *</label>
+          <select name="providerType" data-dyn="ctl00_Enroll_ddlType" data-testid="provider-type">
+            <option value="">-- Select --</option><option value="MD">Physician (MD)</option><option value="DO">Physician (DO)</option>
+            <option value="NP">Nurse Practitioner (NP)</option><option value="PA">Physician Assistant (PA)</option><option value="GRP">Group Practice</option>
+          </select></div>
+        <div><label data-dyn-for="ctl00_Enroll_ddlSpec">Primary specialty *</label>
+          <select name="specialty" data-dyn="ctl00_Enroll_ddlSpec" data-testid="specialty"><option value="">-- Select --</option></select></div>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section data-step-panel="2" data-testid="step-2" class="hidden">
+      <h2 style="margin-top:0;font-size:18px">Step 2 of 4: Practice information</h2>
+      <fieldset data-testid="enrollment-type"><legend>Enrollment type *</legend>
+        <label class="inline"><input type="radio" name="enrollmentType" value="new" data-testid="type-new"> New enrollment</label>
+        <label class="inline"><input type="radio" name="enrollmentType" value="revalidation" data-testid="type-revalidation"> Revalidation</label>
+        <label class="inline"><input type="radio" name="enrollmentType" value="change" data-testid="type-change"> Change of information</label>
+      </fieldset>
+      <div class="row">
+        <div><label data-dyn-for="ctl00_Enroll_ddlState">Practice state *</label><select name="practiceState" data-dyn="ctl00_Enroll_ddlState" data-testid="practice-state"><option value="">-- Select --</option></select></div>
+        <div><label data-dyn-for="ctl00_Enroll_dtEffective">Effective date *</label><input type="date" name="effectiveDate" data-dyn="ctl00_Enroll_dtEffective" data-testid="effective-date"></div>
+      </div>
+      <fieldset data-testid="services"><legend>Services offered (pick at least one) *</legend>
+        <label class="inline"><input type="checkbox" name="services" value="in-person" data-testid="svc-in-person"> In-person visits</label>
+        <label class="inline"><input type="checkbox" name="services" value="telehealth" data-testid="svc-telehealth"> Telehealth</label>
+        <label class="inline"><input type="checkbox" name="services" value="home" data-testid="svc-home"> Home visits</label>
+      </fieldset>
+      <label class="inline"><input type="checkbox" name="acceptingNew" data-testid="accepting-new"> Accepting new patients</label>
+    </section>
+
+    <!-- STEP 3 -->
+    <section data-step-panel="3" data-testid="step-3" class="hidden">
+      <h2 style="margin-top:0;font-size:18px">Step 3 of 4: Supporting documents</h2>
+      <label data-dyn-for="ctl00_Enroll_fuLicense">State license copy * (PDF, PNG or JPG)</label>
+      <input type="file" name="licenseFile" accept=".pdf,.png,.jpg,.jpeg" data-dyn="ctl00_Enroll_fuLicense" data-testid="license-upload">
+      <label data-dyn-for="ctl00_Enroll_fuW9">W-9 form (optional)</label>
+      <input type="file" name="w9File" accept=".pdf" data-dyn="ctl00_Enroll_fuW9" data-testid="w9-upload">
+      <p class="help">Selected files: <span data-testid="uploaded-files">none</span></p>
+    </section>
+
+    <!-- STEP 4 -->
+    <section data-step-panel="4" data-testid="step-4" class="hidden">
+      <h2 style="margin-top:0;font-size:18px">Step 4 of 4: Review &amp; submit</h2>
+      <dl class="details" data-testid="review-summary" id="review"></dl>
+      <label class="inline" style="margin-top:16px"><input type="checkbox" name="attest" data-testid="attest"> I attest that the information above is true and complete.</label>
+    </section>
+
+    <div class="alert error hidden" role="alert" data-testid="form-error"></div>
+    <div class="actions">
+      <button type="button" class="secondary hidden" data-testid="back-button">‹ Back</button>
+      <button type="button" data-testid="next-button" data-dyn="ctl00_Enroll_btnNext">Next ›</button>
+      <button type="submit" class="hidden" data-testid="submit-button" data-dyn="ctl00_Enroll_btnSubmit">Submit application</button>
+    </div>
+  </form>
+
+  <div class="card hidden" data-testid="confirmation" role="status">
+    <h2 style="margin-top:0">Application submitted</h2>
+    <div class="alert success">Your application ID is <strong data-testid="confirmation-id"></strong>. Keep it for your records.</div>
+    <p class="muted">Processing usually takes 30–45 days. <a href="enroll.html">Start another application</a></p>
+  </div>
+</main>
+<footer>ProviderGate practice portal · fake data only</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+if (Portal.requireAuth()) {
+  Portal.header("enroll.html");
+  Portal.randomizeIds();
+  var f = document.getElementById("enrollForm"), step = 1;
+  var $ = function (t) { return document.querySelector("[data-testid=" + t + "]"); };
+  var specs = Array.from(new Set(window.PROVIDERS.map(function (p) { return p.specialty; }))).sort();
+  specs.forEach(function (s) { $("specialty").insertAdjacentHTML("beforeend", '<option value="' + Portal.esc(s) + '">' + Portal.esc(s) + "</option>"); });
+  ["AZ","CA","CO","FL","GA","IL","MA","MI","NC","NJ","NV","NY","OH","OR","PA","TN","TX","WA"].forEach(function (s) { $("practice-state").insertAdjacentHTML("beforeend", '<option value="' + s + '">' + s + "</option>"); });
+
+  var pre = Portal.providerByNpi(Portal.qs("npi"));
+  if (pre) { f.firstName.value = pre.firstName; f.lastName.value = pre.lastName; f.npi.value = pre.npi; f.providerType.value = pre.credential; f.specialty.value = pre.specialty; }
+
+  function files() {
+    var n = [];
+    if (f.licenseFile.files[0]) n.push(f.licenseFile.files[0].name);
+    if (f.w9File.files[0]) n.push(f.w9File.files[0].name);
+    return n;
+  }
+  f.licenseFile.addEventListener("change", function () { $("uploaded-files").textContent = files().join(", ") || "none"; });
+  f.w9File.addEventListener("change", function () { $("uploaded-files").textContent = files().join(", ") || "none"; });
+
+  function validate(s) {
+    if (s === 1) {
+      if (!f.firstName.value.trim() || !f.lastName.value.trim()) return "First and last name are required.";
+      if (!/^\d{10}$/.test(f.npi.value.trim())) return "NPI must be exactly 10 digits.";
+      if (!f.dob.value) return "Date of birth is required.";
+      if (!f.providerType.value) return "Select a provider type.";
+      if (!f.specialty.value) return "Select a primary specialty.";
+    }
+    if (s === 2) {
+      if (!f.querySelector("input[name=enrollmentType]:checked")) return "Choose an enrollment type.";
+      if (!f.practiceState.value) return "Select the practice state.";
+      if (!f.effectiveDate.value) return "Effective date is required.";
+      if (!f.querySelector("input[name=services]:checked")) return "Pick at least one service.";
+    }
+    if (s === 3) { if (!f.licenseFile.files.length) return "Upload a copy of the state license."; }
+    if (s === 4) { if (!f.attest.checked) return "You must check the attestation box."; }
+    return "";
+  }
+  function show(s) {
+    step = s;
+    document.querySelectorAll("[data-step-panel]").forEach(function (p) { p.classList.toggle("hidden", +p.dataset.stepPanel !== s); });
+    document.querySelectorAll(".steps li").forEach(function (li) { var n = +li.dataset.step; li.className = n < s ? "done" : n === s ? "current" : ""; });
+    $("back-button").classList.toggle("hidden", s === 1);
+    $("next-button").classList.toggle("hidden", s === 4);
+    $("submit-button").classList.toggle("hidden", s !== 4);
+    $("form-error").classList.add("hidden");
+    if (s === 4) {
+      var svc = Array.from(f.querySelectorAll("input[name=services]:checked")).map(function (c) { return c.parentNode.textContent.trim(); });
+      var rows = [["Name", f.firstName.value + " " + f.lastName.value], ["NPI", f.npi.value], ["Date of birth", f.dob.value],
+        ["Provider type", f.providerType.options[f.providerType.selectedIndex].text], ["Specialty", f.specialty.value],
+        ["Enrollment type", f.querySelector("input[name=enrollmentType]:checked").parentNode.textContent.trim()],
+        ["Practice state", f.practiceState.value], ["Effective date", f.effectiveDate.value], ["Services", svc.join(", ")],
+        ["Accepting new patients", f.acceptingNew.checked ? "Yes" : "No"], ["Documents", files().join(", ")]];
+      document.getElementById("review").innerHTML = rows.map(function (r) { return "<dt>" + r[0] + '</dt><dd data-testid="review-' + r[0].toLowerCase().replace(/[^a-z]+/g, "-") + '">' + Portal.esc(r[1]) + "</dd>"; }).join("");
+    }
+  }
+  function err(m) { $("form-error").textContent = m; $("form-error").classList.remove("hidden"); }
+  $("next-button").addEventListener("click", function () { var m = validate(step); if (m) err(m); else show(step + 1); });
+  $("back-button").addEventListener("click", function () { show(step - 1); });
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var m = validate(4); if (m) return err(m);
+    $("submit-button").disabled = true; $("submit-button").textContent = "Submitting…";
+    setTimeout(function () {
+      f.classList.add("hidden"); $("step-indicator").classList.add("hidden");
+      $("confirmation-id").textContent = "ENR-" + new Date().getFullYear() + "-" + String(Math.floor(100000 + Math.random() * 900000));
+      $("confirmation").classList.remove("hidden");
+    }, 700);
+  });
+  show(1);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>License lookup | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>State license lookup</h1>
+  <p class="sub">Verify a provider's license status and expiration date. Search by NPI, license number or state (fill at least one).</p>
+  <form class="card" id="lookupForm" data-testid="lookup-form" novalidate>
+    <div class="row3">
+      <div><label data-dyn-for="ctl00_Lic_txtNpi">NPI</label><input type="text" name="npi" maxlength="10" placeholder="10-digit NPI" data-dyn="ctl00_Lic_txtNpi" data-testid="lookup-npi"></div>
+      <div><label data-dyn-for="ctl00_Lic_txtLicense">License number</label><input type="text" name="licenseNumber" placeholder="e.g. TX-MD-123456" data-dyn="ctl00_Lic_txtLicense" data-testid="lookup-license"></div>
+      <div><label data-dyn-for="ctl00_Lic_ddlState">State</label><select name="state" data-dyn="ctl00_Lic_ddlState" data-testid="lookup-state"><option value="">Any state</option></select></div>
+    </div>
+    <div class="alert error hidden" role="alert" data-testid="lookup-error"></div>
+    <div class="actions">
+      <button type="submit" data-testid="lookup-search" data-dyn="ctl00_Lic_btnSearch">Search</button>
+      <button type="button" class="secondary" data-testid="lookup-clear">Clear</button>
+    </div>
+  </form>
+  <div class="card hidden" data-testid="lookup-loading"><div class="loading"><div class="spinner"></div><p>Searching state board records…</p></div></div>
+  <div class="card hidden" data-testid="lookup-results-card">
+    <p class="muted" data-testid="lookup-count" style="margin-top:0"></p>
+    <table data-testid="lookup-results" aria-label="License results">
+      <thead><tr><th>Provider</th><th>NPI</th><th>License #</th><th>State</th><th>Status</th><th>Expiration date</th></tr></thead>
+      <tbody id="licRows"></tbody>
+    </table>
+    <p class="muted hidden" data-testid="no-results" style="padding:12px 0 0">No license records found for that search.</p>
+  </div>
+</main>
+<footer>ProviderGate practice portal · fake data only · add <code>?flaky=1</code> to the URL to simulate an unreliable state board (practice retries)</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+if (Portal.requireAuth()) {
+  Portal.header("license-lookup.html");
+  Portal.randomizeIds();
+  var f = document.getElementById("lookupForm");
+  var $ = function (t) { return document.querySelector("[data-testid=" + t + "]"); };
+  var flaky = Portal.qs("flaky") === "1";
+  Array.from(new Set(window.PROVIDERS.map(function (p) { return p.state; }))).sort().forEach(function (s) {
+    $("lookup-state").insertAdjacentHTML("beforeend", '<option value="' + s + '">' + s + "</option>");
+  });
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var npi = f.npi.value.trim(), lic = f.licenseNumber.value.trim().toUpperCase(), st = f.state.value;
+    $("lookup-error").classList.add("hidden");
+    $("lookup-results-card").classList.add("hidden");
+    if (!npi && !lic && !st) { $("lookup-error").textContent = "Enter an NPI, a license number or pick a state."; $("lookup-error").classList.remove("hidden"); return; }
+    if (npi && !/^\d{10}$/.test(npi)) { $("lookup-error").textContent = "NPI must be exactly 10 digits."; $("lookup-error").classList.remove("hidden"); return; }
+    $("lookup-loading").classList.remove("hidden");
+    $("lookup-search").disabled = true;
+    setTimeout(function () {
+      $("lookup-loading").classList.add("hidden");
+      $("lookup-search").disabled = false;
+      if (flaky && Math.random() < 0.25) {
+        $("lookup-error").textContent = "State board service temporarily unavailable (error 503). Please try again.";
+        $("lookup-error").classList.remove("hidden");
+        return;
+      }
+      var hits = window.PROVIDERS.filter(function (p) {
+        return (!npi || p.npi === npi) && (!lic || p.licenseNumber === lic) && (!st || p.state === st);
+      });
+      document.getElementById("licRows").innerHTML = hits.map(function (p) {
+        return '<tr data-testid="license-row" data-npi="' + p.npi + '" id="' + Portal.rid("gvLic_row") + '">' +
+          '<td data-testid="lic-name">' + Portal.esc(p.firstName + " " + p.lastName + ", " + p.credential) + "</td>" +
+          '<td data-testid="lic-npi">' + p.npi + '</td><td data-testid="lic-number">' + p.licenseNumber + "</td>" +
+          '<td data-testid="lic-state">' + p.state + '</td><td data-testid="lic-status">' + p.licenseStatus + "</td>" +
+          '<td data-testid="lic-expiry">' + (Portal.fmtUS(Portal.expiryDate(p)) || "N/A") + "</td></tr>";
+      }).join("");
+      $("lookup-count").textContent = hits.length + " record" + (hits.length === 1 ? "" : "s") + " found";
+      $("no-results").classList.toggle("hidden", hits.length > 0);
+      $("lookup-results").classList.toggle("hidden", hits.length === 0);
+      $("lookup-results-card").classList.remove("hidden");
+    }, 500 + Math.random() * 900);
+  });
+  $("lookup-clear").addEventListener("click", function () { f.reset(); $("lookup-results-card").classList.add("hidden"); $("lookup-error").classList.add("hidden"); });
+}
+</script>
+</body>
+</html>

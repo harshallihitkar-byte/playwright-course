@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard | ProviderGate</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1 data-testid="welcome-message">Welcome back, Provider Admin</h1>
+  <p class="sub">Here's what's happening with your provider network today.</p>
+
+  <div class="grid" style="margin-bottom:18px">
+    <div class="card"><div class="stat-label">Providers on file</div><div class="stat" data-testid="stat-total">0</div></div>
+    <div class="card"><div class="stat-label">Active licenses</div><div class="stat" data-testid="stat-active">0</div></div>
+    <div class="card"><div class="stat-label">Expiring in 90 days</div><div class="stat" data-testid="stat-expiring" style="color:var(--warn)">0</div></div>
+    <div class="card"><div class="stat-label">Applications in review</div><div class="stat" data-testid="stat-review">0</div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:18px">Quick links</h2>
+    <p class="help">Heads-up for automation: the order of these tiles changes on every visit. Never click "the 3rd tile".</p>
+    <div class="grid" id="tiles" data-testid="quick-links"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:18px">Recent activity</h2>
+    <ul id="activity" data-testid="recent-activity"></ul>
+  </div>
+</main>
+<footer>ProviderGate practice portal · fake data only</footer>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+  if (Portal.requireAuth()) {
+    Portal.header("dashboard.html");
+    var P = window.PROVIDERS, today = new Date(); today.setHours(0,0,0,0);
+    document.querySelector("[data-testid=stat-total]").textContent = P.length;
+    document.querySelector("[data-testid=stat-active]").textContent = P.filter(function (p) { return p.licenseStatus === "Active"; }).length;
+    document.querySelector("[data-testid=stat-expiring]").textContent = P.filter(function (p) { return p.licenseStatus === "Active" && p.expiryOffsetDays <= 90; }).length;
+    document.querySelector("[data-testid=stat-review]").textContent = P.filter(function (p) { return p.enrollmentStatus === "In Review"; }).length;
+    var tiles = [
+      ["providers.html", "Provider search", "Find providers, filter by name, open details", "tile-providers"],
+      ["license-lookup.html", "License lookup", "Check license status & expiry by NPI, license # or state", "tile-license"],
+      ["enroll.html", "New enrollment", "Multi-step enrollment application", "tile-enroll"],
+      ["downloads.html", "Downloads", "Provider roster CSV and reports", "tile-downloads"],
+      ["status-queue.html", "Application status queue", "Slow page with a loading spinner", "tile-slow"],
+      ["tools.html", "Help & tools", "Popups, new tabs and dialogs", "tile-tools"]
+    ].sort(function () { return Math.random() - 0.5; });
+    document.getElementById("tiles").innerHTML = tiles.map(function (t) {
+      return '<a class="tile" href="' + t[0] + '" data-testid="' + t[3] + '" id="' + Portal.rid("tile") + '"><strong>' + t[1] + "</strong><small>" + t[2] + "</small></a>";
+    }).join("");
+    var acts = ["Revalidation reminder sent to Daniel Brooks, PA", "License verified for Aarav Mehta, MD (TX)", "Enrollment ENR-2026-104882 moved to In Review", "CAQH attestation due for 4 providers", "Roster export downloaded"];
+    document.getElementById("activity").innerHTML = acts.map(function (a) { return "<li>" + a + "</li>"; }).join("");
+  }
+</script>
+</body>
+</html>
