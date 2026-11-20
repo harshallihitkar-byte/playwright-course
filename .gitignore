@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+output/
+*.log
+auth_state.json
+*.zip
+.pytest_cache/
