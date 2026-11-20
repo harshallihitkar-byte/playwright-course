@@ -1,0 +1,25 @@
+# License Lookup Checker - configuration
+# Change values here instead of editing code (like PAD input variables).
+
+[portal]
+base_url    = "http://localhost:8000"            # or your GitHub Pages URL of the practice portal
+lookup_path = "license-lookup.html?flaky=1"      # flaky=1 makes ~25% of searches fail -> proves the retries work
+username    = "provider.admin"                   # practice credentials (fake). Override with env PORTAL_USERNAME
+password    = "Enroll@2026"                      # override with env PORTAL_PASSWORD
+otp_code    = "482913"                           # practice portal uses a fixed OTP. Override with env PORTAL_OTP
+
+[run]
+headless              = true
+slow_mo_ms            = 0        # e.g. 300 to watch the bot work
+timeout_ms            = 10000    # max wait for any one step
+max_attempts          = 5        # tries per provider before giving up (the flaky portal fails ~25% of searches)
+retry_backoff_seconds = 1.0      # wait 1s, 2s, 3s ... between tries
+expiry_warning_days   = 90       # flag licenses expiring within this many days
+reuse_session         = true     # skip login + OTP if the saved session still works
+
+[files]
+input_file     = "providers.xlsx"
+output_file    = "output/results.xlsx"
+screenshot_dir = "output/screenshots"
+log_file       = "output/license_checker.log"
+state_file     = "output/auth_state.json"
